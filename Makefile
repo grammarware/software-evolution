@@ -1,0 +1,3 @@
+rm -rf generated_input_formatted
+mkdir generated_input_formatted
+./formatter generated_input generated_input_formatted
