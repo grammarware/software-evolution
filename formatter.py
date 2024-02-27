@@ -2,6 +2,11 @@
 import os
 import sys
 
+SEVEN = ' ' * 7
+ELEVEN = ' ' * 11
+KEYWORDS = ('ACCEPT', 'ADD', 'ALTER', 'CALL', 'COPY', 'DISPLAY', 'DIVIDE', 'EVALUATE', 'GO', 'IF', 'LOOP', 'MOVE', 'MULTIPLY',
+    'NEXT', 'PERFORM', 'PERFORM', 'SIGNAL', 'STOP', 'SUBTRACT', )
+
 # Split the input on spaces, unless they are within double quotes
 def split_into_tokens(contents):
     tokens = []
@@ -26,11 +31,27 @@ def glue(line, token):
     else:
         return token
 
+def writeX(indent, line, write_proc):
+    line_to_write = indent + line
+    cont_indent = indent[:6] + '-' + indent[7:]
+    while len(line_to_write) > 72:
+        write_proc(line_to_write[:72] + '\n')
+        line_to_write = cont_indent + line_to_write[72:]
+    if line_to_write:
+        write_proc(line_to_write + '\n')
+
+def gen_writeA(write_proc):
+    global SEVEN
+    return lambda line: writeX(SEVEN, line, write_proc)
+
+def gen_writeB(write_proc):
+    global ELEVEN
+    return lambda line: writeX(ELEVEN, line, write_proc)
+
 def format_tokens(write, tokens):
-    SEVEN = ' ' * 7
-    ELEVEN = ' ' * 11
-    writeA = lambda t: write(SEVEN  + t + '\n')
-    writeB = lambda t: write(ELEVEN + t + '\n')
+    global KEYWORDS
+    writeA = gen_writeA(write)
+    writeB = gen_writeB(write)
     line = ''
     division = next_division = '?'
     even = 0
@@ -73,6 +94,33 @@ def format_tokens(write, tokens):
             if token == '.':
                 line += token
                 writeA(line)
+                line = ''
+            else:
+                line = glue(line, token)
+        elif division == 'P':
+            if not line:
+                first = True
+                line = token
+                continue
+            if first:
+                if line not in KEYWORDS:
+                    if token == '.':
+                        writeA(line + token)
+                        line = ''
+                    else:
+                        # paragraph name without a period => weird!
+                        writeA(line)
+                        line = token
+                else:
+                    line = glue(line, token)
+                first = False
+                continue
+            if token in KEYWORDS:
+                writeB(line)
+                line = token
+            elif token == '.':
+                line += token
+                writeB(line)
                 line = ''
             else:
                 line = glue(line, token)
