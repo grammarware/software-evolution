@@ -4,8 +4,8 @@ import sys
 
 SEVEN = ' ' * 7
 ELEVEN = ' ' * 11
-KEYWORDS = ('ACCEPT', 'ADD', 'ALTER', 'CALL', 'COPY', 'DISPLAY', 'DIVIDE', 'EVALUATE', 'GO', 'IF', 'LOOP', 'MOVE', 'MULTIPLY',
-    'NEXT', 'PERFORM', 'PERFORM', 'SIGNAL', 'STOP', 'SUBTRACT', )
+KEYWORDS = ('ACCEPT', 'ADD', 'ALTER', 'CALL', 'COPY', 'DISPLAY', 'DIVIDE', 'ELSE', 'END', 'EVALUATE', 'GO', 'IF', 'LOOP', 'MOVE', 'MULTIPLY',
+    'NEXT', 'PERFORM', 'PERFORM', 'SIGNAL', 'STOP', 'SUBTRACT', 'THEN', 'UNTIL', 'VARYING', 'WHEN', 'WHILE')
 
 # Split the input on spaces, unless they are within double quotes
 def split_into_tokens(contents):
@@ -55,6 +55,7 @@ def format_tokens(write, tokens):
     line = ''
     division = next_division = '?'
     even = 0
+    levels = []
     for token in tokens:
         if token == 'DIVISION':
             if line.endswith('IDENTIFICATION'):
@@ -91,7 +92,10 @@ def format_tokens(write, tokens):
             else:
                 line = glue(line, token)
         elif division == 'D':
-            if token == '.':
+            if not line and token.isnumeric():
+                level = int(token)
+                line = ' '*(2*level) + token
+            elif token == '.':
                 line += token
                 writeA(line)
                 line = ''
