@@ -55,7 +55,7 @@ def format_tokens(write, tokens):
     line = ''
     division = next_division = '?'
     even = 0
-    levels = []
+    first = True
     for token in tokens:
         if token == 'DIVISION':
             if line.endswith('IDENTIFICATION'):
@@ -93,8 +93,10 @@ def format_tokens(write, tokens):
                 line = glue(line, token)
         elif division == 'D':
             if not line and token.isnumeric():
-                level = int(token)
-                line = ' '*(2*level) + token
+                # some generated levels are just way too big
+                level = int(token[-2:])
+                dlevel = level*2 % 40
+                line = ' '*dlevel + token[-2:]
             elif token == '.':
                 line += token
                 writeA(line)
